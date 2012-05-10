@@ -123,7 +123,7 @@ namespace Shooter
                     player.Position += gesture.Delta;
                 }
             }
-            //get thumbstick controls hjj
+            //get thumbstick controls  testing
             player.Position.X += currentGamePadState.ThumbSticks.Left.X * playerMoveSpeed;
             player.Position.Y -= currentGamePadState.ThumbSticks.Left.Y * playerMoveSpeed;
 
