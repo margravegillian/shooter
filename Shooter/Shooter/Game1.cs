@@ -31,6 +31,11 @@ namespace Shooter
 
         // a movement speed for the player
         float playerMoveSpeed;
+        // image used to display teh static background
+        Texture2D mainBackground;
+        //paralaxing layers
+        ParallaxingBackground bgLayer1;
+        ParallaxingBackground bgLayer2;
 
 
 
@@ -54,6 +59,10 @@ namespace Shooter
             playerMoveSpeed = 8.0f;
             //enable freedrag gesture
             TouchPanel.EnabledGestures = GestureType.FreeDrag;
+            //load the paralaxing background
+            bgLayer1 = new ParallaxingBackground();
+            bgLayer2 = new ParallaxingBackground();
+            
 
 
 
@@ -71,7 +80,13 @@ namespace Shooter
 
             // Load the player resources            
             Vector2 playerPosition = new Vector2(GraphicsDevice.Viewport.TitleSafeArea.X, GraphicsDevice.Viewport.TitleSafeArea.Y + GraphicsDevice.Viewport.TitleSafeArea.Height / 2);
-            player.Initialize(Content.Load<Texture2D>("player"), playerPosition);
+            Animation playerAnimation = new Animation();
+            Texture2D playerTexture = Content.Load<Texture2D>("shipAnimation");
+            playerAnimation.Initialize(playerTexture, Vector2.Zero, 115, 69, 8, 30, Color.White, 1f, true);
+            player.Initialize(playerAnimation, playerPosition);
+            bgLayer1.Initialize(Content, "bgLayer1", GraphicsDevice.Viewport.Width, -1);
+            bgLayer2.Initialize(Content, "bgLayer2", GraphicsDevice.Viewport.Width, -2);
+            mainBackground = Content.Load<Texture2D>("mainbackground");
         }
 
         /// <summary>
@@ -106,6 +121,9 @@ namespace Shooter
 
             // call the updateplayermethod
             UpdatePlayer(gameTime);
+            //update the paraalaxing background
+            bgLayer1.Update();
+            bgLayer2.Update();
 
 
             base.Update(gameTime);
@@ -114,6 +132,8 @@ namespace Shooter
         //update player method
         private void UpdatePlayer(GameTime gametime)
         {
+            //send gametime to player to send to animation
+            player.Update(gametime);
             //windows phone controls
             while (TouchPanel.IsGestureAvailable)
             {
@@ -165,6 +185,10 @@ namespace Shooter
 
             // Start drawing
             spriteBatch.Begin();
+            // draw the moving paralaxing background
+            spriteBatch.Draw(mainBackground, Vector2.Zero, Color.White);
+            bgLayer1.Draw(spriteBatch);
+            bgLayer2.Draw(spriteBatch);
 
             // Draw the Player
             player.Draw(spriteBatch);
