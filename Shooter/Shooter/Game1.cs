@@ -57,6 +57,17 @@ namespace Shooter
         TimeSpan previousFireTime;
         Texture2D explosionTexture;
         List<Animation> explosions;
+        // the sound that is played when a laser is fired
+        SoundEffect laserSound;
+        // sound when enemy or player dies
+        SoundEffect explosionSound;
+        // the music played during the game
+        Song gameplayMusic;
+        // number that holds the player score
+        int score;
+        //the font used to display ui elements
+        SpriteFont font;
+
 
 
 
@@ -104,6 +115,9 @@ namespace Shooter
             fireTime = TimeSpan.FromSeconds(.15f);
             //initialize explosion graphics
             explosions = new List<Animation>();
+            //set players score to 0
+            score = 0;
+            
             
             
 
@@ -140,7 +154,31 @@ namespace Shooter
             //load the projectile graphic
             projectileTexture = Content.Load<Texture2D>("laser");
             explosionTexture = Content.Load<Texture2D>("explosion");
+            //loud music
+            gameplayMusic = Content.Load<Song>("sound/gameMusic");
+            //load the laser and explosion sound effect
+            laserSound = Content.Load<SoundEffect>("sound/laserfire");
+            explosionSound = Content.Load<SoundEffect>("sound/explosion");
+            // start the music right away
+            PlayMusic(gameplayMusic);
+            //load the score font
+            font = Content.Load<SpriteFont>("gameFont");
 
+
+
+        }
+
+        private void PlayMusic(Song song)
+        {
+            // due to the way the media player plays music we have to catch the exeption music will play when the game is not tehtered
+            try
+            {
+                //play the music
+                MediaPlayer.Play(song);
+                //loop the currently playing song
+                MediaPlayer.IsRepeating = true;
+            }
+            catch { }
         }
 
         /// <summary>
@@ -309,6 +347,14 @@ namespace Shooter
                 previousFireTime = gameTime.TotalGameTime;
                 //add the projectile, but add it to the front and center of the player
                 AddProjectile(player.Position + new Vector2(player.Width / 2, 0));
+                //play the laser sound
+                laserSound.Play();
+                //reset score if player health goes to zero
+                if (player.Health <= 0)
+                {
+                    player.Health = 0;
+                    score = 0;
+                }
 
 
             }
@@ -371,6 +417,9 @@ namespace Shooter
                     {
                         //add explosion
                         AddExplosion(enemies[i].Position);
+                        explosionSound.Play();
+                        //add to teh players score
+                        score += enemies[i].Value;
                     }
                     enemies.RemoveAt(i);
                 }
@@ -424,6 +473,10 @@ namespace Shooter
             {
                 explosions[i].Draw(spriteBatch);
             }
+            //draw the score
+            spriteBatch.DrawString(font, "score: " + score, new Vector2(GraphicsDevice.Viewport.TitleSafeArea.X, GraphicsDevice.Viewport.TitleSafeArea.Y), Color.White);
+            //draw the player health
+            spriteBatch.DrawString(font, "health: " + player.Health, new Vector2(GraphicsDevice.Viewport.TitleSafeArea.X, GraphicsDevice.Viewport.TitleSafeArea.Y + 30), Color.White);
 
 
                 //Stop drawing
