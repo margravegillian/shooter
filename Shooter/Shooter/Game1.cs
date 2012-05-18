@@ -49,6 +49,15 @@ namespace Shooter
         TimeSpan previousSpawnTime;
         // A random number generator
         Random random;
+        //projectile setup
+        Texture2D projectileTexture;
+        List<Projectile> projectiles;
+        // teh rate of fire of the player laser
+        TimeSpan fireTime;
+        TimeSpan previousFireTime;
+        Texture2D explosionTexture;
+        List<Animation> explosions;
+
 
 
 
@@ -89,6 +98,14 @@ namespace Shooter
 
             // Initialize our random number generator
             random = new Random();
+            //initialize the projectile objects
+            projectiles = new List<Projectile>();
+            //set the laser ot fire every quarter second
+            fireTime = TimeSpan.FromSeconds(.15f);
+            //initialize explosion graphics
+            explosions = new List<Animation>();
+            
+            
 
 
             base.Initialize();
@@ -120,6 +137,9 @@ namespace Shooter
             mainBackground = Content.Load<Texture2D>("mainbackground");
 
             enemyTexture = Content.Load<Texture2D>("mineAnimation");
+            //load the projectile graphic
+            projectileTexture = Content.Load<Texture2D>("laser");
+            explosionTexture = Content.Load<Texture2D>("explosion");
 
         }
 
@@ -160,10 +180,82 @@ namespace Shooter
 
             // Update the enemies
             UpdateEnemies(gameTime);
-
+            //update the collision
+            UpdateCollision();
+            UpdateProjectiles();
+            UpdateExplosions(gameTime);
 
 
             base.Update(gameTime);
+        }
+
+        // add explosion of enemies to game
+        private void AddExplosion(Vector2 position)
+        {
+            Animation explosion = new Animation();
+            explosion.Initialize(explosionTexture, position, 134, 134, 12, 45, Color.White, 1f, false);
+            explosions.Add(explosion);
+
+        }
+        //add the laser to the game
+        private void AddProjectile(Vector2 position)
+        {
+            Projectile projectile = new Projectile();
+            projectile.Initialize(GraphicsDevice.Viewport, projectileTexture, position);
+            projectiles.Add(projectile);
+
+
+
+        }
+        private void UpdateCollision()
+        {
+
+            //use the rectangles built-in intersect function to determine if two ojbects are overlapping
+            Rectangle rectangle1;
+            Rectangle rectangle2;
+            //only create the rectangle once for the player
+            rectangle1 = new Rectangle((int)player.Position.X, (int)player.Position.Y, player.Width, player.Height);
+            //do the collision beween the playe rand the enemies
+            for (int i =  0; i < enemies.Count; i++)
+            {
+                rectangle2 = new Rectangle((int)enemies[i].Position.X, (int)enemies[i].Position.Y, enemies[i].Width, enemies[i].Height);
+                //determine if the two objects collided with eacn other
+                if (rectangle1.Intersects(rectangle2))
+                {
+                    //substract the health from the player based on the enemy damage
+                    player.Health -= enemies[i].Damage;
+                    //since the nemy collided with the player destroy it
+                    enemies[i].Health = 0;
+                    //if the player health is less than zerw we died
+                    if (player.Health < -0)
+                        player.Active = false;
+
+
+
+                
+                }
+
+            
+            }
+            //projectile vs enemy collision
+            for (int i = 0; i < projectiles.Count; i++)
+            {
+                for (int j = 0; j < enemies.Count; j++)
+                {
+                    // create the reactangles we need to determine if we collided with each other
+                    rectangle1 = new Rectangle((int)projectiles[i].Position.X - projectiles[i].Width / 2, (int)projectiles[i].Position.Y - projectiles[i].Height / 2, projectiles[i].Width, projectiles[i].Height);
+
+                    rectangle2 = new Rectangle((int)enemies[j].Position.X - enemies[j].Width / 2, (int)enemies[j].Position.Y - enemies[j].Height / 2, enemies[j].Width, enemies[j].Height);
+                    //determine if the two objects colleded with each other
+                    if (rectangle1.Intersects(rectangle2))
+                    {
+                        enemies[j].Health -= projectiles[i].Damage;
+                        projectiles[i].active = false;
+                    }
+                }
+            }
+
+
         }
 
         private void UpdatePlayer(GameTime gameTime)
@@ -210,7 +302,29 @@ namespace Shooter
             // Make sure that the player does not go out of bounds
             player.Position.X = MathHelper.Clamp(player.Position.X, 0, GraphicsDevice.Viewport.Width - player.Width);
             player.Position.Y = MathHelper.Clamp(player.Position.Y, 0, GraphicsDevice.Viewport.Height - player.Height);
+            //fire only every interval we set as the fireTime
+            if (gameTime.TotalGameTime - previousFireTime > fireTime)
+            {
+                //reset our current time
+                previousFireTime = gameTime.TotalGameTime;
+                //add the projectile, but add it to the front and center of the player
+                AddProjectile(player.Position + new Vector2(player.Width / 2, 0));
 
+
+            }
+
+        }
+        private void UpdateProjectiles()
+        {
+            //update the projectiles
+            for (int i = projectiles.Count - 1; i >= 0; i--)
+            {
+                projectiles[i].Update();
+                if (projectiles[i].active == false)
+                {
+                    projectiles.RemoveAt(i);
+                }
+            }
         }
 
         private void AddEnemy()
@@ -252,11 +366,27 @@ namespace Shooter
 
                 if (enemies[i].Active == false)
                 {
+                    //if not active and healdh <=0
+                    if (enemies[i].Health <= 0)
+                    {
+                        //add explosion
+                        AddExplosion(enemies[i].Position);
+                    }
                     enemies.RemoveAt(i);
                 }
             }
         }
-
+        private void UpdateExplosions(GameTime gameTime)
+        {
+            for (int i = explosions.Count - 1; i >= 0; i--)
+            {
+                explosions[i].Update(gameTime);
+                if (explosions[i].Active == false)
+                {
+                    explosions.RemoveAt(i);
+                }
+            }
+        }
 
 
         /// <summary>
@@ -284,10 +414,20 @@ namespace Shooter
             {
                 enemies[i].Draw(spriteBatch);
             }
+            //draw projectiles
+            for (int i = 0; i < projectiles.Count; i++)
+            {
+                projectiles[i].Draw(spriteBatch);
+            }
+            //draw explosions
+            for (int i = 0; i < explosions.Count; i++)
+            {
+                explosions[i].Draw(spriteBatch);
+            }
 
 
-            //Stop drawing
-            spriteBatch.End();
+                //Stop drawing
+                spriteBatch.End();
 
             base.Draw(gameTime);
         }

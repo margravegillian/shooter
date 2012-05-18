@@ -24,6 +24,11 @@ namespace Shooter
         {
             get { return EnemyAnimation.FrameWidth; }
         }
+        public int Height
+        {
+            get { return EnemyAnimation.FrameHeight; }
+        }
+
         // the speed at which the enemy moves
         float enemyMoveSpeed;
 
