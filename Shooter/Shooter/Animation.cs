@@ -8,6 +8,7 @@ namespace Shooter
     {
         // the image representing the colleciton of images used for animation
         Texture2D spriteStrip;
+        
         //the scale used to diplay sprite strip
         float scale;
         // the time since we last updated the frame
@@ -92,6 +93,8 @@ namespace Shooter
 
 
         }
+
+       
         public void Draw(SpriteBatch spriteBatch)
         {
             // only draw the animation when we are active

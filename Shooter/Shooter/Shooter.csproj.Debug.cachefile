@@ -24,5 +24,12 @@ Content\saturn1.xnb
 Content\ParticleFont30Italic.xnb
 Content\Sound\PickedPowerup2.xnb
 Content\Sound\laser1.xnb
+Content\lasergreen.xnb
+Content\laserred.xnb
+Content\Effects\Ambient.xnb
+Content\Effects\myEffect.xnb
+Content\Effects\Standard.xnb
+Content\gradientgreen.xnb
 Content\Sound\gameMusic.wma
 Content\Sound\menuMusic.wma
+Content\Effects\Ambient.fx

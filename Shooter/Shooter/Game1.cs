@@ -17,6 +17,14 @@ namespace Shooter
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
+
+
+
+
+        Effect m_effect;
+        
+
+        
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
@@ -133,6 +141,11 @@ namespace Shooter
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            m_effect = Content.Load<Effect>("Effects/standard");
+            
+            
+            
 
             // Load the player resources
             Animation playerAnimation = new Animation();
@@ -446,6 +459,8 @@ namespace Shooter
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
+            
+
             // Start drawing
             spriteBatch.Begin();
 
@@ -456,13 +471,17 @@ namespace Shooter
             bgLayer2.Draw(spriteBatch);
 
             // Draw the Player
-            player.Draw(spriteBatch);
+            
 
             // Draw the Enemies
             for (int i = 0; i < enemies.Count; i++)
             {
+                
                 enemies[i].Draw(spriteBatch);
             }
+            
+            
+            
             //draw projectiles
             for (int i = 0; i < projectiles.Count; i++)
             {
@@ -482,6 +501,15 @@ namespace Shooter
                 //Stop drawing
                 spriteBatch.End();
 
+                spriteBatch.Begin(SpriteSortMode.Deferred,BlendState.NonPremultiplied,SamplerState.PointClamp,DepthStencilState.Default,RasterizerState.CullNone, m_effect);
+               
+                m_effect.CurrentTechnique = m_effect.Techniques["DesaturateTechnique"];
+                m_effect.Parameters["DesaturationAmount"].SetValue(1.0f);
+                
+               
+
+                player.Draw(spriteBatch);
+                spriteBatch.End();
             base.Draw(gameTime);
         }
     }
